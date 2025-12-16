@@ -497,34 +497,36 @@ export function createRunManager({ PHOTOS_DIR, SCREEN_SCALE, getCalibration, RUL
     }
 
     const runId = genRunId();
-    const runState = {
-      runId,
-      request,
-      status: "queued",
-      error: null,
-      warnings: [],
-      stopRequested: false,
-      startedAt: null,
-      updatedAt: now(),
-      waiting: null,
+const runState = {
+  runId,
+  request,
+  status: "queued",
+  error: null,
+  warnings: [],
+  stopRequested: false,
+  startedAt: null,
+  updatedAt: now(),
+  waiting: null,
 
-      concurrency: defaultConcurrency(),
-      queue: null,
-      queueSet: null,
-      inFlightSet: null,
+  cleanedOnce: false, // ✅ REQUIRED
 
-      exportPath: null,
-      finalizedAt: null,
+  concurrency: defaultConcurrency(),
+  queue: null,
+  queueSet: null,
+  inFlightSet: null,
 
-      currentTable: request.tableNumber || "",
-      currentFile: request.fileName || "",
-      tablesTotal: 0,
-      filesTotal: 0,
-      filesProcessed: 0,
-      filesBlockedOrSkipped: 0,
-      rowsCommitted: 0,
-      rowsDrafted: 0
-    };
+  exportPath: null,
+  finalizedAt: null,
+
+  currentTable: request.tableNumber || "",
+  currentFile: request.fileName || "",
+  tablesTotal: 0,
+  filesTotal: 0,
+  filesProcessed: 0,
+  filesBlockedOrSkipped: 0,
+  rowsCommitted: 0,
+  rowsDrafted: 0
+};
 
     runs.set(runId, runState);
     activeRunId = runId;
