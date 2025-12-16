@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "exportedAt": 1765902873036,
+  "scope": "row",
+  "request": {
+    "scope": "row",
+    "tableNumber": "83383",
+    "fileName": "28112025 01122025.png",
+    "rowIndex": 0
+  },
+  "totals": {
+    "tables": 1,
+    "rows": 1
+  },
+  "tables": [
+    {
+      "tableNumber": "83383",
+      "rows": [
+        {
+          "key": "2025-11-28 00:25",
+          "ts": 1764311100000,
+          "values": {
+            "Date": "28.11.2025 0:25",
+            "Milk Yeild-MY": "25.1",
+            "Milk Yield Expected-MYE": "24.9",
+            "Visit Result-VR": "Successful"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "tableTop": {
+    "x": 109,
+    "y": 208
+  },
+  "tableBottom": {
+    "x": 119,
+    "y": 1009
+  },
+  "columns": [
+    {
+      "name": "Date",
+      "startX": 44,
+      "endX": 130
+    },
+    {
+      "name": "Milk Yeild-MY",
+      "startX": 152,
+      "endX": 193
+    },
+    {
+      "name": "Milk Yield Expected-MYE",
+      "startX": 194,
+      "endX": 245
+    },
+    {
+      "name": "Visit Result-VR",
+      "startX": 247,
+      "endX": 362
+    }
+  ],
+  "titleTopLeft": {
+    "x": 76,
+    "y": 37
+  },
+  "titleBottomRight": {
+    "x": 633,
+    "y": 63
+  },
+  "nextTablePoint": {
+    "x": 1189,
+    "y": 52
+  },
+  "noDataTopLeft": {
+    "x": 622,
+    "y": 557
+  },
+  "noDataBottomRight": {
+    "x": 707,
+    "y": 584
+  },
+  "settingsButtonPoint": {
+    "x": 1277,
+    "y": 108
+  },
+  "settingsBoxTopLeft": {
+    "x": 407,
+    "y": 285
+  },
+  "settingsBoxBottomRight": {
+    "x": 479,
+    "y": 311
+  },
+  "dateFilterButtonPoint": {
+    "x": 417,
+    "y": 389
+  },
+  "dateStartFieldPoint": {
+    "x": 532,
+    "y": 393
+  },
+  "dateEndFieldPoint": {
+    "x": 632,
+    "y": 395
+  },
+  "applyChangesPoint": {
+    "x": 854,
+    "y": 734
+  },
+  "searchBoxPoint": {
+    "x": 19,
+    "y": 127
+  },
+  "dateRangeStart": "01112025",
+  "dateRangeEnd": "01122025",
+  "daysPerBlock": 10,
+  "firstTableNumber": "19873",
+  "rowsPerScreen": 58,
+  "pageSteps": 1,
+  "rowsPerPage": 72,
+  "scrollPoint": {
+    "x": 1285,
+    "y": 185
+  },
+  "currentTableNumber": "245"
+}

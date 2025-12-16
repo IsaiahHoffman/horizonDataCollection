@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "columns": {
+    "Date": {
+      "restriction": "format",
+      "formats": [
+        "(nn|n).(nn|n).nnnn (nn|n):nn"
+      ]
+    },
+    "Milk Yeild-MY": {
+      "restriction": "format",
+      "formats": [
+        "(nnn|nn|n).n"
+      ]
+    },
+    "Milk Yield Expected-MYE": {
+      "restriction": "format",
+      "formats": [
+        "(nnn|nn|n).n"
+      ]
+    },
+    "Visit Result-VR": {
+      "restriction": "none"
+    }
+  },
+  "settings": {
+    "enumStrict": true
+  }
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📋 Table Calibration Console</title>
+<link rel="stylesheet" href="/panel.css">
+</head>
+<body>
+
+<h1>📋 Table Calibration Console</h1>
+<div id="coords">X:‑ Y:‑</div>
+
+<!-- ========================================================= -->
+<!-- STEP 1 – Table Top & Bottom -->
+<!-- ========================================================= -->
+<section id="step1">
+  <h3>Step 1 – Table Region (Top & Bottom)</h3>
+  <p>
+    Hover the <strong>topmost row</strong> → press <b>T</b><br>
+    Hover the <strong>bottommost row</strong> → press <b>B</b>
+  </p>
+  <div>Top: <span id="topVal">(unset)</span></div>
+  <div>Bottom: <span id="botVal">(unset)</span></div>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 2 – Columns -->
+<!-- ========================================================= -->
+<section id="step2" style="display:none;">
+  <h3>Step 2 – Columns</h3>
+  <p>The first column must be the <strong>Date</strong> column.</p>
+  <div id="cols"></div>
+  <button onclick="addColumn()">➕ Add Column</button>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 3 – Title Area -->
+<!-- ========================================================= -->
+<section id="step3" style="display:none;">
+  <h3>Step 3 – Title Area</h3>
+  <p>
+    Hover top‑left of title → press <b>L</b><br>
+    Hover bottom‑right → press <b>R</b>
+  </p>
+  <div>Title TL: <span id="titleTopLeftVal">(unset)</span></div>
+  <div>Title BR: <span id="titleBottomRightVal">(unset)</span></div>
+  <button onclick="captureTitle()">📸 Test Title OCR</button>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 4 – Next Table -->
+<!-- ========================================================= -->
+<section id="step4" style="display:none;">
+  <h3>Step 4 – Next Table</h3>
+  <p>Hover the <strong>Next Table</strong> button → press <b>N</b></p>
+  <div>Next Table: <span id="nextTableVal">(unset)</span></div>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 5 – No Data Area -->
+<!-- ========================================================= -->
+<section id="step5" style="display:none;">
+  <h3>Step 5 – No Data Area</h3>
+  <p>
+    Hover TL of no-data message → press <b>Y</b><br>
+    Hover BR → press <b>U</b>
+  </p>
+  <div>No-data TL: <span id="noDataTopLeftVal">(unset)</span></div>
+  <div>No-data BR: <span id="noDataBottomRightVal">(unset)</span></div>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 6 – Settings & Date Filter Calibration -->
+<!-- ========================================================= -->
+<section id="step6" style="display:none;">
+  <h3>Step 6 – Settings & Date Filter Calibration</h3>
+
+  <p>Hover each element and press the hotkey:</p>
+
+  <ul>
+    <li><b>W</b> — Settings button 
+      <span id="settingsButtonVal">(unset)</span>
+    </li>
+    <li><b>O</b> — Settings panel top‑left 
+      <span id="settingsTLVal">(unset)</span>
+    </li>
+    <li><b>P</b> — Settings panel bottom‑right 
+      <span id="settingsBRVal">(unset)</span>
+    </li>
+    <li><b>D</b> — Date filter radio button 
+      <span id="dateFilterVal">(unset)</span>
+    </li>
+    <li><b>F</b> — Start date text box 
+      <span id="dateStartVal">(unset)</span>
+    </li>
+    <li><b>G</b> — End date text box 
+      <span id="dateEndVal">(unset)</span>
+    </li>
+    <li><b>A</b> — Apply button 
+      <span id="applyBtnVal">(unset)</span>
+    </li>
+    <li><b>Q</b> — Search box 
+      <span id="searchBoxVal">(unset)</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 7 – Date Range Calibration -->
+<!-- ========================================================= -->
+<section id="step7" style="display:none;">
+  <h3>Step 7 – Date Range Settings</h3>
+
+  <p>Format must be <strong>DDMMYYYY</strong>.</p>
+
+  <label>Start Date:</label><br>
+  <input id="dateRangeStart" type="text" maxlength="8"><br><br>
+
+  <label>End Date:</label><br>
+  <input id="dateRangeEnd" type="text" maxlength="8"><br><br>
+
+  <label>Days per Block:</label><br>
+  <input id="daysPerBlock" type="number" min="1" max="31"><br><br>
+
+  <button onclick="saveDateRange()">💾 Save Date Range</button>
+</section>
+
+<!-- ========================================================= -->
+<!-- STEP 8 – Rows Per Screen -->
+<!-- ========================================================= -->
+<section id="step8" style="display:none;">
+  <h3>Step 8 – Rows Per Screen</h3>
+  <p>
+    Load a table with many rows so the table is full.<br>
+    Count how many rows are fully visible.<br>
+    Enter that number here:
+  </p>
+  <input id="rowsPerScreen" type="number" min="1" max="200">
+  <button onclick="saveRowsPerScreen()">💾 Save Rows Per Screen</button>
+</section>
+
+<!-- ========================================================= -->
+<!-- MAIN ACTION: SCAN FULL DATE RANGE -->
+<!-- ========================================================= -->
+<section id="scanBlock" style="display:none;">
+  <h3>Full Scan Automation</h3>
+  <p>This will loop through all date blocks and all tables.</p>
+  <button onclick="scanFullDateRange()">▶ Scan Full Date Range</button>
+</section>
+
+<!-- ========================================================= -->
+<!-- CONSOLE LOG -->
+<!-- ========================================================= -->
+<h3>Console</h3>
+<div id="console">(nothing yet)</div>
+
+<!-- ========================================================= -->
+<!-- scripts -->
+<!-- ========================================================= -->
+<script src="/panelJS/ui-helpers.js"></script>
+<script src="/panelJS/endpoints.js"></script>
+<script src="/panelJS/calibration.js"></script>
+<script src="/panelJS/capture.js"></script>
+<script src="/panelJS/auto-date.js"></script>
+<script src="/panel.js"></script>
+
+</body>
+</html>

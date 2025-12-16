@@ -1,0 +1,21 @@
+server.js
+server/
+    automation.js
+    calibration.js
+    capture.js
+    saveBlock.js
+    tableCheck.js
+public/
+    photos/
+        "animal number"/
+            "date start" "date end".png
+    panel.js
+    panel.html
+    panel.css
+    panelJS/
+        auto-date.js
+        calibration.js
+        capture.js
+        endpoints.js
+        ui-helpers.js
+    launcher.html

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Launch Control Panel</title>
+<style>
+ body{font-family:sans-serif;text-align:center;margin-top:100px;}
+ button{padding:14px 28px;font-size:1.1em;}
+</style>
+</head>
+<body>
+<h1>Launch Control Panel</h1>
+<button onclick="openPanel()">Open 400 px Panel</button>
+<script>
+function openPanel(){
+  const w=400,h=screen.availHeight,x=screen.availWidth-w;
+  window.open("/panel.html","ControlPanel",
+    `width=${w},height=${h},left=${x},top=0`);
+}
+</script>
+</body>
+</html>
