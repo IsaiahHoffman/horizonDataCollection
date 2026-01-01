@@ -1,29 +1,47 @@
 {
   "version": 1,
-  "columns": {
+  "rules": {
     "Date": {
-      "restriction": "format",
-      "formats": [
-        "(nn|n).(nn|n).nnnn (nn|n):nn"
-      ]
+      "type": "format",
+      "strictCase": false,
+      "allowEmpty": false,
+      "config": {
+        "formats": [
+          "(nn|n).(nn|n).nnnn (nn|n):nn"
+        ]
+      }
     },
     "Milk Yeild-MY": {
-      "restriction": "format",
-      "formats": [
-        "(nnn|nn|n).n"
-      ]
+      "type": "format",
+      "strictCase": false,
+      "allowEmpty": true,
+      "config": {
+        "formats": [
+          "(nnn|nn|n).n"
+        ]
+      }
     },
     "Milk Yield Expected-MYE": {
-      "restriction": "format",
-      "formats": [
-        "(nnn|nn|n).n"
-      ]
+      "type": "format",
+      "strictCase": false,
+      "allowEmpty": true,
+      "config": {
+        "formats": [
+          "(nnn|nn|n).n"
+        ]
+      }
     },
     "Visit Result-VR": {
-      "restriction": "none"
+      "type": "enum",
+      "strictCase": false,
+      "allowEmpty": false,
+      "config": {
+        "values": [
+          "Successful",
+          "Milk Interval not Passed",
+          "Teats not found"
+        ]
+      }
     }
-  },
-  "settings": {
-    "enumStrict": true
   }
 }

@@ -1,96 +1,96 @@
 {
   "tableTop": {
-    "x": 109,
-    "y": 208
+    "x": 216,
+    "y": 325
   },
   "tableBottom": {
-    "x": 119,
-    "y": 1009
+    "x": 185,
+    "y": 993
   },
   "columns": [
     {
       "name": "Date",
-      "startX": 44,
-      "endX": 130
+      "startX": 71,
+      "endX": 215
     },
     {
       "name": "Milk Yeild-MY",
-      "startX": 152,
-      "endX": 193
+      "startX": 215,
+      "endX": 286
     },
     {
       "name": "Milk Yield Expected-MYE",
-      "startX": 194,
-      "endX": 245
+      "startX": 287,
+      "endX": 374
     },
     {
       "name": "Visit Result-VR",
-      "startX": 247,
-      "endX": 362
+      "startX": 375,
+      "endX": 569
     }
   ],
   "titleTopLeft": {
-    "x": 76,
+    "x": 123,
     "y": 37
   },
   "titleBottomRight": {
-    "x": 633,
-    "y": 63
+    "x": 579,
+    "y": 91
   },
   "nextTablePoint": {
-    "x": 1189,
-    "y": 52
+    "x": 1170,
+    "y": 57
   },
   "noDataTopLeft": {
-    "x": 622,
-    "y": 557
+    "x": 374,
+    "y": 457
   },
   "noDataBottomRight": {
-    "x": 707,
-    "y": 584
+    "x": 1085,
+    "y": 893
   },
   "settingsButtonPoint": {
-    "x": 1277,
-    "y": 108
+    "x": 1313,
+    "y": 155
   },
   "settingsBoxTopLeft": {
-    "x": 407,
-    "y": 285
+    "x": 273,
+    "y": 126
   },
   "settingsBoxBottomRight": {
-    "x": 479,
-    "y": 311
+    "x": 401,
+    "y": 171
   },
   "dateFilterButtonPoint": {
-    "x": 417,
-    "y": 389
+    "x": 287,
+    "y": 297
   },
   "dateStartFieldPoint": {
-    "x": 532,
-    "y": 393
+    "x": 482,
+    "y": 309
   },
   "dateEndFieldPoint": {
-    "x": 632,
-    "y": 395
+    "x": 648,
+    "y": 302
   },
   "applyChangesPoint": {
-    "x": 854,
-    "y": 734
+    "x": 1003,
+    "y": 871
   },
   "searchBoxPoint": {
-    "x": 19,
-    "y": 127
+    "x": 29,
+    "y": 195
   },
   "dateRangeStart": "01112025",
-  "dateRangeEnd": "01122025",
-  "daysPerBlock": 10,
+  "dateRangeEnd": "10112025",
+  "daysPerBlock": 5,
   "firstTableNumber": "19873",
-  "rowsPerScreen": 58,
+  "rowsPerScreen": 29,
   "pageSteps": 1,
   "rowsPerPage": 72,
   "scrollPoint": {
     "x": 1285,
     "y": 185
   },
-  "currentTableNumber": "245"
+  "currentTableNumber": "19873"
 }

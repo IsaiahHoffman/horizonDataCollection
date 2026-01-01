@@ -1,25 +1,251 @@
-// ============================================================
 // server/ocr/index.js
-// OCR module hub: registers OCR routes (run/debug/rules/issues/reset)
-// UPDATED: creates a shared runManager singleton for run+issues routes
-// ============================================================
 
-import { registerOcrRunRoutes } from "./routes/run.routes.js";
-import { registerOcrDebugRoutes } from "./routes/debug.routes.js";
-import { registerOcrRulesRoutes } from "./routes/rules.routes.js";
-import { registerOcrIssuesRoutes } from "./routes/issues.routes.js";
-import { registerOcrResetRoutes } from "./routes/reset.routes.js";
+import fs from "fs";
+import path from "path";
 
-import { createRunManager } from "./engine/jobs/runManager.js";
+import { createRunManager } from "./runs/runManager.js";
+import { loadOcrRules } from "./rules/ruleLoader.js";
+import { loadAllIssues } from "./issues/issueStore.js";
+import { tryGenerateExport } from "./export/exportManager.js";
 
+import {
+  overrideIssue,
+  recheckIssue
+} from "./issues/issueActions.js";
+
+/**
+ * Registers all OCR routes with the Express app.
+ */
 export function registerOcrModule(app, deps) {
   const runManager = createRunManager(deps);
 
-  const deps2 = { ...deps, runManager };
+  // --------------------------------------------------
+  // TABLE / FILE LISTING
+  // --------------------------------------------------
 
-  registerOcrRunRoutes(app, deps2);
-  registerOcrDebugRoutes(app, deps2);
-  registerOcrRulesRoutes(app, deps2);
-  registerOcrIssuesRoutes(app, deps2);
-  registerOcrResetRoutes(app, deps2);
+  app.get("/ocr/tables", (req, res) => {
+    const tables = fs
+      .readdirSync(deps.PHOTOS_DIR)
+      .filter(f =>
+        fs.statSync(path.join(deps.PHOTOS_DIR, f)).isDirectory()
+      );
+
+    res.json({ success: true, tables });
+  });
+
+  app.get("/ocr/files/:tableId", (req, res) => {
+    const dir = path.join(deps.PHOTOS_DIR, req.params.tableId);
+    if (!fs.existsSync(dir)) {
+      return res.status(404).json({ success: false });
+    }
+
+    const files = fs
+      .readdirSync(dir)
+      .filter(f => f.endsWith(".png"));
+
+    res.json({ success: true, files });
+  });
+
+  // --------------------------------------------------
+  // RUN CONTROL
+  // --------------------------------------------------
+
+  app.post("/ocr/run", (req, res) => {
+    try {
+      const run = runManager.startRun(req.body || {});
+      res.json({ success: true, runId: run.runId });
+    } catch (e) {
+      res.status(400).json({ success: false, error: e.message });
+    }
+  });
+
+  app.get("/ocr/run/:runId/status", (req, res) => {
+    const run = runManager.getRun(req.params.runId);
+    if (!run) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Run not found" });
+    }
+    res.json({ success: true, run });
+  });
+
+  app.post("/ocr/run/:runId/stop", (req, res) => {
+    const ok = runManager.stopRun(req.params.runId);
+    res.json({ success: ok });
+  });
+
+  // --------------------------------------------------
+  // ✅ EXPORT (NEW)
+  // --------------------------------------------------
+
+  app.post("/ocr/export/try", (req, res) => {
+    const run = runManager.getActiveRun();
+    if (!run) {
+      return res.json({ success: false });
+    }
+
+    tryGenerateExport(run, deps);
+
+    res.json({
+      success: true,
+      exportPath: run.exportPath || null
+    });
+  });
+
+  // --------------------------------------------------
+  // RULES
+  // --------------------------------------------------
+
+  app.get("/ocr-rules", (req, res) => {
+    try {
+      const calibrationPath = path.join(
+        process.cwd(),
+        "calibration.json"
+      );
+      const calibration = JSON.parse(
+        fs.readFileSync(calibrationPath, "utf8")
+      );
+
+      if (!Array.isArray(calibration.columns)) {
+        throw new Error(
+          "Invalid calibration.json: columns[] missing"
+        );
+      }
+
+      const rulesPath = path.join(
+        process.cwd(),
+        "ocrRules.json"
+      );
+      const persistedRules = JSON.parse(
+        fs.readFileSync(rulesPath, "utf8")
+      );
+
+      res.json({
+        success: true,
+        columns: calibration.columns,
+        rules: persistedRules.rules || {}
+      });
+    } catch (e) {
+      res
+        .status(500)
+        .json({ success: false, error: e.message });
+    }
+  });
+
+  app.post("/ocr-rules", (req, res) => {
+    try {
+      const RULES_PATH = path.join(
+        process.cwd(),
+        "ocrRules.json"
+      );
+
+      if (!req.body || typeof req.body.rules !== "object") {
+        throw new Error("Invalid rules payload");
+      }
+
+      fs.writeFileSync(
+        RULES_PATH,
+        JSON.stringify(
+          { version: 1, rules: req.body.rules },
+          null,
+          2
+        )
+      );
+
+      runManager.handleRulesChanged();
+
+      res.json({ success: true });
+    } catch (e) {
+      res
+        .status(400)
+        .json({ success: false, error: e.message });
+    }
+  });
+
+  // --------------------------------------------------
+  // ISSUES
+  // --------------------------------------------------
+
+  app.get("/ocr/issues/next", async (req, res) => {
+    try {
+      const issues = await loadAllIssues(deps.PHOTOS_DIR);
+      if (issues.length === 0) {
+        return res.json({ found: false });
+      }
+
+      const issue = issues[0];
+      res.json({
+        found: true,
+        tableId: issue.animalId,
+        issue
+      });
+    } catch (e) {
+      res
+        .status(500)
+        .json({ success: false, error: e.message });
+    }
+  });
+
+  app.get(
+    "/ocr/issues/:tableId/:issueId/image",
+    (req, res) => {
+      const { tableId, issueId } = req.params;
+      const p = path.join(
+        deps.PHOTOS_DIR,
+        tableId,
+        "issues",
+        issueId,
+        "cell.png"
+      );
+
+      if (!fs.existsSync(p)) {
+        return res.status(404).end();
+      }
+
+      res.sendFile(p);
+    }
+  );
+
+  app.post(
+    "/ocr/issues/:tableId/:issueId/approve",
+    async (req, res) => {
+      try {
+        const { tableId, issueId } = req.params;
+        const { action, value } = req.body;
+
+        const issues = await loadAllIssues(deps.PHOTOS_DIR);
+        const issue = issues.find(
+          i =>
+            i.id === issueId && i.animalId === tableId
+        );
+
+        if (!issue) {
+          throw new Error("Issue not found");
+        }
+
+        const rules = loadOcrRules();
+
+        if (action === "override") {
+          await overrideIssue({
+            PHOTOS_DIR: deps.PHOTOS_DIR,
+            issue,
+            newValue: value
+          });
+        } else {
+          await recheckIssue({
+            PHOTOS_DIR: deps.PHOTOS_DIR,
+            issue,
+            newValue: value,
+            rules
+          });
+        }
+
+        res.json({ success: true });
+      } catch (e) {
+        res
+          .status(400)
+          .json({ success: false, error: e.message });
+      }
+    }
+  );
 }
