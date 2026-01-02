@@ -1,4 +1,6 @@
+// ============================================================
 // server/ocr/scopes/rowScope.js
+// ============================================================
 
 import path from "path";
 import { extractOcrRowsFromImage } from "../processing/ocrExtractor.js";
@@ -21,25 +23,26 @@ export async function runRowScope(run, deps) {
 
   const imagePath = path.join(PHOTOS_DIR, tableId, fileName);
 
+  // ✅ Explicit progress initialization
   run.currentAnimal = tableId;
   run.currentFile = fileName;
+  run.filesTotal = 1;
+  run.filesProcessed = 0;
   run.updatedAt = Date.now();
 
-  // -----------------------------------------
-  // OCR extraction (infrastructure-level)
-  // -----------------------------------------
+  // ✅ OCR extraction
   const ocrRows = await extractOcrRowsFromImage(imagePath);
 
   const cells = ocrRows[rowIndex];
   if (!cells) {
     // No such row → treat as completed
+    run.filesProcessed = 1;
+    run.updatedAt = Date.now();
     return;
   }
 
-  // -----------------------------------------
-  // Process the row
-  // -----------------------------------------
-  const result = await processRow({
+  // ✅ Process the row
+  await processRow({
     PHOTOS_DIR,
     animalId: tableId,
     imageName: fileName,
@@ -48,7 +51,6 @@ export async function runRowScope(run, deps) {
     rules: run.rules
   });
 
-  // If issue created or row saved, row scope is done.
-  // DO NOT throw.
-  return;
+  run.filesProcessed = 1;
+  run.updatedAt = Date.now();
 }

@@ -1,4 +1,6 @@
+// ============================================================
 // server/ocr/rules/validators.js
+// ============================================================
 
 /**
  * Strict date validation: d.M.yyyy HH:mm
@@ -41,30 +43,95 @@ export function validateEnum(value, allowed, strictCase) {
 }
 
 /**
- * Compile format string like (nnn|nn|n).n to regex.
+ * Expand grammar like (nnn|nn|n).n into all concrete formats.
+ */
+function expandFormat(format) {
+  const rx = /$([^()]+)$/;
+  let out = [format];
+
+  while (out.some(f => rx.test(f))) {
+    const next = [];
+    for (const f of out) {
+      const m = f.match(rx);
+      if (!m) {
+        next.push(f);
+        continue;
+      }
+      const [group, body] = m;
+      for (const opt of body.split("|")) {
+        next.push(f.replace(group, opt));
+      }
+    }
+    out = next;
+  }
+
+  return out;
+}
+
+/**
+ * Compile concrete format to regex.
  */
 function compileFormatToRegex(format) {
   let src = format;
-
   src = src.replace(/n/g, "[0-9]");
   src = src.replace(/\./g, "\\.");
-
+  src = src.replace(/\s/g, "\\s");
   return new RegExp(`^${src}$`);
 }
 
 /**
- * Format validation (multiple formats allowed).
+ * Count digits required by a format.
+ */
+function digitCount(format) {
+  return (format.match(/n/g) || []).length;
+}
+
+/**
+ * Rebuild a value from digits using a concrete format.
+ */
+function rebuildFromFormat(digits, format) {
+  if (digits.length !== digitCount(format)) return null;
+
+  let out = "";
+  let di = 0;
+
+  for (const ch of format) {
+    if (ch === "n") out += digits[di++] ?? "";
+    else out += ch;
+  }
+
+  return out;
+}
+
+/**
+ * Format validation with grammar-aware normalization.
+ * ✅ Handles missing decimals (white/black cells)
  */
 export function validateFormat(value, formats) {
   if (typeof value !== "string") return false;
-  const v = value.trim();
-  if (!v) return false;
-
+  const raw = value.trim();
+  if (!raw) return false;
   if (!Array.isArray(formats)) return false;
 
-  for (const f of formats) {
+  // Expand all formats
+  const expanded = formats.flatMap(expandFormat);
+
+  // ✅ 1. Direct match
+  for (const f of expanded) {
     const rx = compileFormatToRegex(f);
-    if (rx.test(v)) return true;
+    if (rx.test(raw)) return true;
+  }
+
+  // ✅ 2. Attempt punctuation recovery
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return false;
+
+  for (const f of expanded) {
+    const rebuilt = rebuildFromFormat(digits, f);
+    if (!rebuilt) continue;
+
+    const rx = compileFormatToRegex(f);
+    if (rx.test(rebuilt)) return true;
   }
 
   return false;

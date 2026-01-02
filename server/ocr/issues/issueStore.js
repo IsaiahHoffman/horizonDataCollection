@@ -82,3 +82,23 @@ export async function removeIssue(PHOTOS_DIR, animalId, issueId) {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 }
+
+export function countIssues(PHOTOS_DIR, animalId = null) {
+  if (!fs.existsSync(PHOTOS_DIR)) return 0;
+
+  let count = 0;
+
+  const animals = animalId
+    ? [animalId]
+    : fs.readdirSync(PHOTOS_DIR).filter(a =>
+        fs.statSync(path.join(PHOTOS_DIR, a)).isDirectory()
+      );
+
+  for (const a of animals) {
+    const dir = issuesDir(PHOTOS_DIR, a);
+    if (!fs.existsSync(dir)) continue;
+    count += fs.readdirSync(dir).length;
+  }
+
+  return count;
+}

@@ -53,3 +53,10 @@ export function overrideIssue({ tableId, issueId, value }) {
     body: JSON.stringify({ action: "override", value })
   });
 }
+
+export function fetchCounts({ scope, tableId }) {
+  const qs = new URLSearchParams({ scope });
+  if (tableId) qs.set("tableId", tableId);
+
+  return requestJSON(`/ocr/counts?${qs.toString()}`);
+}

@@ -1,11 +1,16 @@
+// ============================================================
 // public/ocr/ui/issuesPanel.js
+// ============================================================
 
 import {
   fetchNextIssue,
   approveIssue,
-  overrideIssue
+  overrideIssue,
+  fetchCounts
 } from "../api/ocrApi.js";
+
 import { requestJSON } from "../api/client.js";
+import { getRun } from "../state/runState.js";
 
 /**
  * Polling interval (ms)
@@ -35,13 +40,40 @@ function startPolling() {
 
   pollTimer = setInterval(async () => {
     try {
+      await refreshCounts();
       await refreshIssue();
     } catch (e) {
       console.error("issue poll error", e);
     }
   }, POLL_MS);
 
+  refreshCounts().catch(() => {});
   refreshIssue().catch(() => {});
+}
+
+async function refreshCounts() {
+  const run = getRun();
+  const el = document.getElementById("issuesCount");
+  if (!el || !run) return;
+
+  const scope = run.scope;
+  const tableId = run.request?.tableId;
+
+  // ✅ GUARD: only fetch when parameters are valid
+  if (!scope) return;
+  if (scope !== "all" && !tableId) return;
+
+  try {
+    const res = await fetchCounts({ scope, tableId });
+
+    el.textContent =
+      `(Issues: ${res.issues} | ` +
+      `Drafts: ${res.drafts} | ` +
+      `Data: ${res.data})`;
+  } catch (e) {
+    // ✅ Expected to occasionally fail during run transitions
+    console.warn("Failed to fetch issue counts", e.message);
+  }
 }
 
 async function refreshIssue(force = false) {
@@ -135,17 +167,7 @@ function renderIssue({ tableId, issue }) {
 
   input.oninput = () => {
     isEditing = true;
-
-    if (
-      issue.columnIndex === 0 &&
-      !input.value.trim()
-    ) {
-      setStatus(
-        "⚠️ Date is blank. Approving will mark the end of this file’s scan."
-      );
-    } else {
-      setStatus("");
-    }
+    setStatus("");
   };
 
   approveBtn.onclick = async () => {
@@ -157,11 +179,8 @@ function renderIssue({ tableId, issue }) {
         value: input.value
       });
 
-      // ✅ TRY EXPORT AFTER ISSUE RESOLUTION
-      await requestJSON("/ocr/export/try", {
-        method: "POST"
-      });
-
+      await requestJSON("/ocr/export/try", { method: "POST" });
+      await refreshCounts();
       await refreshIssue(true);
     } catch (e) {
       setStatus(`Error: ${e.message}`);
@@ -177,11 +196,8 @@ function renderIssue({ tableId, issue }) {
         value: input.value
       });
 
-      // ✅ TRY EXPORT AFTER ISSUE RESOLUTION
-      await requestJSON("/ocr/export/try", {
-        method: "POST"
-      });
-
+      await requestJSON("/ocr/export/try", { method: "POST" });
+      await refreshCounts();
       await refreshIssue(true);
     } catch (e) {
       setStatus(`Error: ${e.message}`);

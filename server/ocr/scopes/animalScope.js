@@ -1,9 +1,13 @@
+// ============================================================
 // server/ocr/scopes/animalScope.js
+// ============================================================
 
 import path from "path";
 import fs from "fs";
 import { extractOcrRowsFromImage } from "../processing/ocrExtractor.js";
 import { processImage } from "../processing/processImage.js";
+import { runQueue } from "../batch/queue.js";
+import { getWorkerCount } from "../batch/concurrency.js";
 
 /**
  * Animal scope:
@@ -25,7 +29,6 @@ export async function runAnimalScope(run, deps) {
     throw new Error(`Animal folder not found: ${folder}`);
   }
 
-  // ✅ Get all image files
   const files = fs
     .readdirSync(folder)
     .filter(f => f.toLowerCase().endsWith(".png"))
@@ -36,37 +39,34 @@ export async function runAnimalScope(run, deps) {
   run.filesProcessed = 0;
   run.updatedAt = Date.now();
 
-  for (const fileName of files) {
-    // ✅ Respect stop
-    if (run.stopRequested) {
+  await runQueue({
+    items: files,
+    workerCount: getWorkerCount(),
+    stopRequested: () => run.stopRequested,
+    pauseRequested: () => run.pauseRequested,
+    onItemStart: () => {
       run.updatedAt = Date.now();
-      return;
-    }
-
-    // ✅ Respect pause
-    while (run.pauseRequested) {
-      await new Promise(r => setTimeout(r, 200));
+    },
+    workerFn: async (fileName) => {
       if (run.stopRequested) return;
+
+      run.currentFile = fileName;
+      run.updatedAt = Date.now();
+
+      const imagePath = path.join(folder, fileName);
+
+      const ocrRows = await extractOcrRowsFromImage(imagePath);
+
+      await processImage({
+        PHOTOS_DIR,
+        animalId: tableId,
+        imageName: fileName,
+        ocrRows,
+        rules: run.rules
+      });
+
+      run.filesProcessed++;
+      run.updatedAt = Date.now();
     }
-
-    run.currentFile = fileName;
-    run.updatedAt = Date.now();
-
-    const imagePath = path.join(folder, fileName);
-
-    // ✅ OCR the image
-    const ocrRows = await extractOcrRowsFromImage(imagePath);
-
-    // ✅ Process all rows in the image
-    await processImage({
-      PHOTOS_DIR,
-      animalId: tableId,
-      imageName: fileName,
-      ocrRows,
-      rules: run.rules
-    });
-
-    run.filesProcessed++;
-    run.updatedAt = Date.now();
-  }
+  });
 }

@@ -1,4 +1,6 @@
+// ============================================================
 // server/ocr/scopes/fileScope.js
+// ============================================================
 
 import path from "path";
 import fs from "fs";
@@ -24,14 +26,17 @@ export async function runFileScope(run, deps) {
     throw new Error(`Image not found: ${imagePath}`);
   }
 
+  // ✅ Explicit progress initialization
   run.currentAnimal = tableId;
   run.currentFile = fileName;
+  run.filesTotal = 1;
+  run.filesProcessed = 0;
   run.updatedAt = Date.now();
 
-  // ✅ Step 1: OCR the image
+  // ✅ OCR the image
   const ocrRows = await extractOcrRowsFromImage(imagePath);
 
-  // ✅ Step 2: Process all rows
+  // ✅ Process all rows
   await processImage({
     PHOTOS_DIR,
     animalId: tableId,
@@ -41,4 +46,5 @@ export async function runFileScope(run, deps) {
   });
 
   run.filesProcessed = 1;
+  run.updatedAt = Date.now();
 }

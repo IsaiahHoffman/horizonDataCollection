@@ -1,4 +1,6 @@
+// ============================================================
 // public/ocr/ui/layout.js
+// ============================================================
 
 export function renderLayout() {
   const app = document.getElementById("app");
@@ -18,7 +20,15 @@ export function renderLayout() {
     </section>
 
     <section id="issuesSection">
-      <h2>Issues</h2>
+      <h2>
+        Issues
+        <span
+          id="issuesCount"
+          style="font-size:12px;font-weight:normal;color:#666;margin-left:8px;"
+        >
+          (Issues: 0 | Drafts: 0)
+        </span>
+      </h2>
       <div id="issuesPanel"></div>
     </section>
 

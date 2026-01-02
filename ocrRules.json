@@ -39,7 +39,17 @@
         "values": [
           "Successful",
           "Milk Interval not Passed",
-          "Teats not found"
+          "Teats not found",
+          "Connection attempts RF",
+          "Connection attempts LF",
+          "Connection attempts RR",
+          "Connection attempts LR",
+          "Connection time",
+          "Dead milk time LF",
+          "Dead milk time LR",
+          "Dead milk time RR",
+          "Dead milk time RF",
+          "Stopped by user"
         ]
       }
     }

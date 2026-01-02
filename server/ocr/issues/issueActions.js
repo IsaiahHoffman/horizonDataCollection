@@ -9,7 +9,6 @@ import {
   deleteDraft
 } from "../drafts/draftStore.js";
 import { saveRowIfNewDate } from "../processing/dedupe.js";
-import { tryGenerateExport } from "../export/exportManager.js";
 
 /**
  * Override an issue (non-date only).
@@ -17,8 +16,7 @@ import { tryGenerateExport } from "../export/exportManager.js";
 export async function overrideIssue({
   PHOTOS_DIR,
   issue,
-  newValue,
-  run
+  newValue
 }) {
   if (issue.columnIndex === 0) {
     throw new Error("Date column cannot be overridden");
@@ -29,8 +27,6 @@ export async function overrideIssue({
     issue,
     newValue
   });
-
-  tryGenerateExport(run, { PHOTOS_DIR });
 }
 
 /**
@@ -40,15 +36,13 @@ export async function recheckIssue({
   PHOTOS_DIR,
   issue,
   newValue,
-  rules,
-  run
+  rules
 }) {
   // ✅ DATE ISSUE
   if (issue.columnIndex === 0) {
     // EOF case
     if (!newValue || !newValue.trim()) {
       await removeIssue(PHOTOS_DIR, issue.animalId, issue.id);
-      tryGenerateExport(run, { PHOTOS_DIR });
       return;
     }
 
@@ -69,7 +63,6 @@ export async function recheckIssue({
     );
 
     await removeIssue(PHOTOS_DIR, issue.animalId, issue.id);
-    tryGenerateExport(run, { PHOTOS_DIR });
     return;
   }
 
@@ -89,8 +82,6 @@ export async function recheckIssue({
     issue,
     newValue
   });
-
-  tryGenerateExport(run, { PHOTOS_DIR });
 }
 
 /**

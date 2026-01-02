@@ -1,0 +1,10 @@
+{
+  "id": "dc5c7955-3647-439f-a750-df08e604a120",
+  "animalId": "135",
+  "imageName": "03042025 07042025.png",
+  "rowIndex": 0,
+  "columnIndex": 0,
+  "value": "3.42025 1:24",
+  "reason": "Invalid date format",
+  "createdAt": 1767308263274
+}

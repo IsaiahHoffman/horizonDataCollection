@@ -1,7 +1,12 @@
+// ============================================================
 // server/ocr/runs/runManager.js
+// ============================================================
 
 import { executeRun } from "./executeRun.js";
-import { resetAnimal, resetAllAnimals } from "../storage/resetStore.js";
+import {
+  resetAnimal,
+  resetAllAnimals
+} from "../storage/resetStore.js";
 import { loadOcrRules } from "../rules/ruleLoader.js";
 
 function now() {
@@ -22,9 +27,42 @@ export function createRunManager(deps) {
     return runs.get(runId) || null;
   }
 
-  // ✅ ADD THIS
   function getActiveRun() {
-    return activeRunId ? runs.get(activeRunId) || null : null;
+    return activeRunId
+      ? runs.get(activeRunId) || null
+      : null;
+  }
+
+  /**
+   * ✅ Clears previous OCR output BEFORE a run starts.
+   *
+   * Rules:
+   * - row / file / animal → reset ONE animal
+   * - all → reset ALL animals
+   */
+  function cleanForRun(request) {
+    const { scope, tableId } = request || {};
+
+    if (scope === "all") {
+      resetAllAnimals(deps.PHOTOS_DIR);
+      return;
+    }
+
+    if (
+      scope === "animal" ||
+      scope === "file" ||
+      scope === "row"
+    ) {
+      if (!tableId) {
+        throw new Error(
+          `Missing tableId for scope "${scope}"`
+        );
+      }
+      resetAnimal(deps.PHOTOS_DIR, tableId);
+      return;
+    }
+
+    throw new Error(`Unknown scope: ${scope}`);
   }
 
   function startRun(request) {
@@ -42,6 +80,10 @@ export function createRunManager(deps) {
       }
     }
 
+    // ✅ CRITICAL FIX:
+    // ✅ Clean BEFORE run starts
+    cleanForRun(request);
+
     const runId = genRunId();
     const rulesSnapshot = loadOcrRules();
 
@@ -55,7 +97,6 @@ export function createRunManager(deps) {
 
       stopRequested: false,
       pauseRequested: false,
-      cleanedOnce: false,
 
       createdAt: now(),
       startedAt: null,
@@ -113,18 +154,6 @@ export function createRunManager(deps) {
     return true;
   }
 
-  function performCleanStart(run) {
-    if (run.cleanedOnce) return;
-
-    if (run.scope === "all") {
-      resetAllAnimals(deps.PHOTOS_DIR);
-    } else {
-      resetAnimal(deps.PHOTOS_DIR, run.request.tableId);
-    }
-
-    run.cleanedOnce = true;
-  }
-
   function handleRulesChanged() {
     const run = getActiveRun();
     if (!run) return;
@@ -140,8 +169,7 @@ export function createRunManager(deps) {
     pauseRun,
     resumeRun,
     getRun,
-    getActiveRun, // ✅ EXPORT IT
-    performCleanStart,
+    getActiveRun,
     handleRulesChanged
   };
 }

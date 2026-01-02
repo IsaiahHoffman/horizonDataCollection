@@ -40,3 +40,23 @@ export function hasDrafts(PHOTOS_DIR, animalId) {
   if (!fs.existsSync(dir)) return false;
   return fs.readdirSync(dir).length > 0;
 }
+
+export function countDrafts(PHOTOS_DIR, animalId = null) {
+  if (!fs.existsSync(PHOTOS_DIR)) return 0;
+
+  let count = 0;
+
+  const animals = animalId
+    ? [animalId]
+    : fs.readdirSync(PHOTOS_DIR).filter(a =>
+        fs.statSync(path.join(PHOTOS_DIR, a)).isDirectory()
+      );
+
+  for (const a of animals) {
+    const dir = draftsDir(PHOTOS_DIR, a);
+    if (!fs.existsSync(dir)) continue;
+    count += fs.readdirSync(dir).length;
+  }
+
+  return count;
+}

@@ -9,7 +9,6 @@ import {
 import {
   getRun,
   setRun,
-  clearRun,
   onRunChange
 } from "../state/runState.js";
 
@@ -192,11 +191,10 @@ function startPolling(runId) {
     }
 
     if (
-      ["done", "stopped", "error"].includes(run.status)
+      ["stopped", "error"].includes(run.status)
     ) {
       clearInterval(pollTimer);
       pollTimer = null;
-      clearRun();
     }
   }, 1000);
 }

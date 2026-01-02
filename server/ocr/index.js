@@ -1,4 +1,6 @@
+// ============================================================
 // server/ocr/index.js
+// ============================================================
 
 import fs from "fs";
 import path from "path";
@@ -7,6 +9,11 @@ import { createRunManager } from "./runs/runManager.js";
 import { loadOcrRules } from "./rules/ruleLoader.js";
 import { loadAllIssues } from "./issues/issueStore.js";
 import { tryGenerateExport } from "./export/exportManager.js";
+import { initOcrWorkers } from "./batch/ocrWorkerPool.js";
+
+import { countIssues } from "./issues/issueStore.js";
+import { countDrafts } from "./drafts/draftStore.js";
+import { countDataPoints } from "./storage/dataStore.js";
 
 import {
   overrideIssue,
@@ -17,6 +24,9 @@ import {
  * Registers all OCR routes with the Express app.
  */
 export function registerOcrModule(app, deps) {
+  // ✅ Initialize OCR worker pool once
+  initOcrWorkers();
+
   const runManager = createRunManager(deps);
 
   // --------------------------------------------------
@@ -75,7 +85,7 @@ export function registerOcrModule(app, deps) {
   });
 
   // --------------------------------------------------
-  // ✅ EXPORT (NEW)
+  // ✅ EXPORT (SINGLE SOURCE OF TRUTH)
   // --------------------------------------------------
 
   app.post("/ocr/export/try", (req, res) => {
@@ -248,4 +258,44 @@ export function registerOcrModule(app, deps) {
       }
     }
   );
+
+  // --------------------------------------------------
+  // ✅ ISSUE / DRAFT / DATA COUNTS (SINGLE ROUTE)
+  // --------------------------------------------------
+
+  app.get("/ocr/counts", (req, res) => {
+    try {
+      const scope = req.query.scope;
+      const animalId = req.query.tableId || null;
+
+      let issues = 0;
+      let drafts = 0;
+      let data = 0;
+
+      if (scope === "all") {
+        issues = countIssues(deps.PHOTOS_DIR);
+        drafts = countDrafts(deps.PHOTOS_DIR);
+        data = countDataPoints(deps.PHOTOS_DIR);
+      } else {
+        if (!animalId) {
+          throw new Error("tableId required for this scope");
+        }
+        issues = countIssues(deps.PHOTOS_DIR, animalId);
+        drafts = countDrafts(deps.PHOTOS_DIR, animalId);
+        data = countDataPoints(deps.PHOTOS_DIR, animalId);
+      }
+
+      res.json({
+        success: true,
+        issues,
+        drafts,
+        data
+      });
+    } catch (e) {
+      res.status(400).json({
+        success: false,
+        error: e.message
+      });
+    }
+  });
 }
